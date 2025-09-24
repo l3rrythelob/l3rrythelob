@@ -24,8 +24,8 @@ function PlayerDetection.new(config)
         HEARTBEAT_INTERVAL = config.heartbeatInterval or 10,
         USER_POLL_INTERVAL = config.userPollInterval or 12,
         REQUEST_TIMEOUT = config.requestTimeout or 8,
-        USER_EFFECTS_URL = config.userEffectsUrl or "https://raw.githubusercontent.com/l3rrythelob/l3rrythelob/refs/heads/main/UserEffects.lua",
-        showNotifications = config.showNotifications = false, -- Default true
+        USER_EFFECTS_URL = config.userEffectsUrl or "https://raw.githubusercontent.com/l3rrythelob/AprilHUB-UI/refs/heads/main/UserEffects.lua",
+        showNotifications = config.showNotifications ~= false, -- Default true
         notificationLib = config.notificationLib or nil -- Pass your notification library (Orion, etc.)
     }
     
