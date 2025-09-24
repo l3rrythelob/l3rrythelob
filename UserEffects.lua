@@ -14,8 +14,8 @@ local users = {
         effect = "rainbow"
     },
     ["burrybeddy"] = {
-        tag = "April Hub Dev",
-        effect = "rainbow"
+        tag = "April Hub Owner",
+        effect = "pulse"
     }
 }
 
