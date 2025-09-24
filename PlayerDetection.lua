@@ -143,19 +143,96 @@ function PlayerDetection:createUserDisplay(player, displayInfo)
     textLabel.Size = UDim2.new(1, 0, 1, 0)
     textLabel.BackgroundTransparency = 1
     textLabel.Text = displayInfo.displayName
-    textLabel.TextColor3 = displayInfo.color or Color3.new(1, 1, 1)
+    textLabel.TextColor3 = Color3.new(1, 1, 1) -- Start with white
     textLabel.TextScaled = true
     textLabel.Font = Enum.Font.GothamBold
     textLabel.TextStrokeTransparency = 0
     textLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
     textLabel.Parent = frame
     
-    -- Apply effect using UserEffects library
-    if self.userEffects and displayInfo.hasAnimation then
-        local connection = self.userEffects.applyEffect(textLabel, displayInfo.effectName)
-        if connection then
-            self.state.effectConnections[username] = connection
+    -- Apply effects based on server response
+    if displayInfo.hasRainbowAnimation or displayInfo.effectName == "rainbow" then
+        -- Rainbow effect
+        local connection
+        local lastUpdate = 0
+        connection = self.services.RunService.Heartbeat:Connect(function()
+            if not textLabel or not textLabel.Parent or not billboardGui.Parent then
+                if connection then
+                    connection:Disconnect()
+                    connection = nil
+                end
+                return
+            end
+            
+            local currentTime = tick()
+            if currentTime - lastUpdate >= 0.1 then
+                local hue = (currentTime * 0.5) % 1
+                local color = Color3.fromHSV(hue, 1, 1)
+                textLabel.TextColor3 = color
+                lastUpdate = currentTime
+            end
+        end)
+        
+        self.state.effectConnections[username] = connection
+        print("[PlayerDetection] Applied rainbow effect to", username)
+        
+    elseif displayInfo.effectName == "pulse" then
+        -- Pulse effect
+        local connection
+        local lastUpdate = 0
+        connection = self.services.RunService.Heartbeat:Connect(function()
+            if not textLabel or not textLabel.Parent or not billboardGui.Parent then
+                if connection then
+                    connection:Disconnect()
+                    connection = nil
+                end
+                return
+            end
+            
+            local currentTime = tick()
+            if currentTime - lastUpdate >= 0.05 then
+                local pulse = math.sin(currentTime * 3) * 0.3 + 0.7
+                textLabel.TextTransparency = 1 - pulse
+                lastUpdate = currentTime
+            end
+        end)
+        
+        self.state.effectConnections[username] = connection
+        print("[PlayerDetection] Applied pulse effect to", username)
+        
+    elseif displayInfo.effectName == "glow" then
+        -- Glow effect
+        textLabel.TextColor3 = Color3.fromRGB(255, 215, 0) -- Gold color
+        local connection
+        local lastUpdate = 0
+        connection = self.services.RunService.Heartbeat:Connect(function()
+            if not textLabel or not textLabel.Parent or not billboardGui.Parent then
+                if connection then
+                    connection:Disconnect()
+                    connection = nil
+                end
+                return
+            end
+            
+            local currentTime = tick()
+            if currentTime - lastUpdate >= 0.08 then
+                local glow = math.sin(currentTime * 2) * 0.2 + 0.8
+                textLabel.TextStrokeTransparency = 1 - glow
+                lastUpdate = currentTime
+            end
+        end)
+        
+        self.state.effectConnections[username] = connection
+        print("[PlayerDetection] Applied glow effect to", username)
+        
+    else
+        -- Static color based on role
+        if displayInfo.isDeveloper then
+            textLabel.TextColor3 = Color3.fromRGB(255, 215, 0) -- Gold for devs
+        else
+            textLabel.TextColor3 = Color3.fromRGB(52, 152, 219) -- Blue for users
         end
+        print("[PlayerDetection] Applied static color to", username)
     end
     
     return billboardGui
