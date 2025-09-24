@@ -143,7 +143,15 @@ function PlayerDetection:createUserDisplay(player, displayInfo)
     textLabel.Size = UDim2.new(1, 0, 1, 0)
     textLabel.BackgroundTransparency = 1
     textLabel.Text = displayInfo.displayName
-    textLabel.TextColor3 = Color3.new(1, 1, 1) -- Start with white
+
+    if displayInfo.color then
+        local r, g, b = displayInfo.color:match("(%d+),(%d+),(%d+)")
+        textLabel.TextColor3 = Color3.fromRGB(tonumber(r), tonumber(g), tonumber(b))
+    elseif displayInfo.effectName == "rainbow" or displayInfo.hasAnimation then
+        textLabel.TextColor3 = Color3.new(1, 1, 1) 
+    else
+        textLabel.TextColor3 = Color3.fromRGB(52, 152, 219)
+    end
     textLabel.TextScaled = true
     textLabel.Font = Enum.Font.GothamBold
     textLabel.TextStrokeTransparency = 0
@@ -152,7 +160,6 @@ function PlayerDetection:createUserDisplay(player, displayInfo)
     
     -- Apply effects based on server response
     if displayInfo.hasRainbowAnimation or displayInfo.effectName == "rainbow" then
-        -- Rainbow effect
         local connection
         local lastUpdate = 0
         connection = self.services.RunService.Heartbeat:Connect(function()
@@ -201,8 +208,6 @@ function PlayerDetection:createUserDisplay(player, displayInfo)
         print("[PlayerDetection] Applied pulse effect to", username)
         
     elseif displayInfo.effectName == "glow" then
-        -- Glow effect
-        textLabel.TextColor3 = Color3.fromRGB(255, 215, 0) -- Gold color
         local connection
         local lastUpdate = 0
         connection = self.services.RunService.Heartbeat:Connect(function()
@@ -226,7 +231,6 @@ function PlayerDetection:createUserDisplay(player, displayInfo)
         print("[PlayerDetection] Applied glow effect to", username)
         
     else
-        -- Static color based on role
         if displayInfo.isDeveloper then
             textLabel.TextColor3 = Color3.fromRGB(255, 215, 0) -- Gold for devs
         else
