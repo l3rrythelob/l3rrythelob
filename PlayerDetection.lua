@@ -281,7 +281,11 @@ function PlayerDetection:pollServerForNewUsers()
                     self.state.knownPlayers[username] = true
                     
                     if player.Character and player.Character:FindFirstChild("Head") then
-                        local displayInfo = userData.displayInfo or self:getUserDisplayInfo(username)
+                        -- Use server displayInfo directly, only fallback if server data is missing
+                        local displayInfo = userData.displayInfo
+                        if not displayInfo then
+                            displayInfo = self:getUserDisplayInfo(username)
+                        end
                         self.state.userDisplayGuis[username] = self:createUserDisplay(player, displayInfo)
                         self:showUserNotification(username, displayInfo, true)
                     end
