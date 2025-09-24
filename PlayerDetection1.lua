@@ -94,11 +94,7 @@ function PlayerDetection:loadUserEffects()
 end
 
 function PlayerDetection:getUserDisplayInfo(username)
-    if self.userEffects then
-        return self.userEffects.getUserDisplayInfo(username)
-    end
-    
-    -- Fallback
+    -- Fallback method - should primarily use server data now
     return {
         displayName = "April Hub User",
         isDeveloper = false,
@@ -281,11 +277,7 @@ function PlayerDetection:pollServerForNewUsers()
                     self.state.knownPlayers[username] = true
                     
                     if player.Character and player.Character:FindFirstChild("Head") then
-                        -- Use server displayInfo directly, only fallback if server data is missing
-                        local displayInfo = userData.displayInfo
-                        if not displayInfo then
-                            displayInfo = self:getUserDisplayInfo(username)
-                        end
+                        local displayInfo = userData.displayInfo or self:getUserDisplayInfo(username)
                         self.state.userDisplayGuis[username] = self:createUserDisplay(player, displayInfo)
                         self:showUserNotification(username, displayInfo, true)
                     end
@@ -350,21 +342,22 @@ function PlayerDetection:joinServer()
             self.state.isConnected = true
             print("[PlayerDetection] Connected to server successfully!")
             
-            -- Create own display
+            -- Use the server's displayInfo instead of generating our own
+            local serverDisplayInfo = response.userInfo.displayInfo
             self.state.knownPlayers[self.player.Name] = true
-            local displayInfo = self:getUserDisplayInfo(self.player.Name)
+            
             if self.player.Character and self.player.Character:FindFirstChild("Head") then
-                self.state.userDisplayGuis[self.player.Name] = self:createUserDisplay(self.player, displayInfo)
+                self.state.userDisplayGuis[self.player.Name] = self:createUserDisplay(self.player, serverDisplayInfo)
             end
             
-            -- Display existing users
+            -- Display existing users with their server-provided display info
             if response.usersInPlace then
                 for _, user in pairs(response.usersInPlace) do
                     local existingPlayer = self.services.Players:FindFirstChild(user.username)
                     if existingPlayer and existingPlayer ~= self.player then
                         self.state.knownPlayers[user.username] = true
-                        local userDisplayInfo = user.displayInfo or self:getUserDisplayInfo(user.username)
-                        self.state.userDisplayGuis[user.username] = self:createUserDisplay(existingPlayer, userDisplayInfo)
+                        -- Use the server-provided displayInfo
+                        self.state.userDisplayGuis[user.username] = self:createUserDisplay(existingPlayer, user.displayInfo)
                     end
                 end
             end
@@ -448,14 +441,13 @@ function PlayerDetection:setupDisconnectHandlers()
     end)
 end
 
--- Initialize the player detection system
 function PlayerDetection:initialize()
     print("[PlayerDetection] Initializing player detection system...")
     
-    -- Load UserEffects library first
-    if not self:loadUserEffects() then
-        warn("[PlayerDetection] Failed to load UserEffects, using fallback system")
-    end
+    -- Remove this line - don't load UserEffects client-side anymore
+    -- if not self:loadUserEffects() then
+    --     warn("[PlayerDetection] Failed to load UserEffects, using fallback system")
+    -- end
     
     -- Wait for character
     local character = self.player.Character or self.player.CharacterAdded:Wait()
